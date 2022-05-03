@@ -1,0 +1,354 @@
+#
+# The following variables can be used in most messages that involve a punishment:
+#
+# Punishment specific variables
+# $id - The ID of the punishment in the database.
+# $type - Type of punishment - ban, mute, warn, kick.
+# $reason - the reason for the punishment
+# $executor - the moderator's name, or their display name (/nick) if this is enabled in the configuration
+# $executorUUID - the moderator's UUID
+# $permanent - whether this punishment is permanent
+# $ipban - whether this is an IP-ban
+# $silent - whether this punishment was executed silently (-s)
+# $active - whether this punishment is active
+#
+# Affected player specific variables
+# $playerDisplayName - player display name. If display names are not enabled in the configuration or if the player's display name is not available in the message's context, the player's regular name will be used instead.
+# $playerName - player name
+# $playerUUID - UUID of affected player
+# $playerIP - IP of affected player
+# $geoip - Country of affected player, requires GeoIP to be enabled in the configuration, won't work with imported bans
+#
+# Servers
+# These variables represent a server.
+# If the plugin is installed on Spigot, a server is represented by the "server_name" option in config.yml.
+# If the plugin is installed on BungeeCord, a server is represented by their name in the "servers" section in the proxy's config.yml.
+# $serverScope - the scope of the punishment (the server(s) it will affect)
+# $serverOrigin - the origin of the punishment (the server/subserver it was placed on)
+#
+# Dates
+# Example format: "2017-02-03", depends on time_format
+# $dateStart - date the punishment was placed
+# $dateEnd - date the punishment will expire, "forever" if permanent
+#
+# Durations
+# Example format: "20 days, 5 hours, 2 minutes". If permanent, "forever", if expired, "expired" (both are configurable).
+# $duration - time until expiry
+# $originalDuration - the full duration of the punishment.
+# $timeSince - time since placement
+#
+# Configured message variables
+# These variables represent messages in this configuration (messages.yml)
+# $base - banned_message_base
+# $appealMessage - banned_message_appeal_message
+#
+# Global variables
+# $activeBans, $activeMutes, $activeWarnings - total number of global active punishments
+# $totalBans, $totalMutes, $totalWarnings, $totalKicks - total number of global punishments (including inactive ones)
+#
+# Vault-specific variables
+# $playerPrefix - Vault chat prefix of affected player
+# $playerSuffix - Vault chat suffix of affected player
+# $executorPrefix - Vault chat prefix of executor
+# $executorSuffix - Vault chat suffix of executor
+# Any message can be disabled by setting it to "". Empty messages will not be sent by the plugin.
+#
+# Hover text requires permission "litebans.json.hover_text" to view, players lacking permission will see messages without hover text.
+# JSON example:
+# muted: '&cYou are muted! {hoverText: &7$duration remaining}'
+#
+# Hex colors are supported (#000000 - #FFFFFF)
+#
+# https://docs.oracle.com/javase/tutorial/i18n/format/simpleDateFormat.html
+# Example time format with hours + minutes:
+# time_format: 'dd/MM/yyyy HH:mm'
+time_format: dd-MM-yyyy
+history_time_format: dd-MM-yyyy
+banned_message_base: |
+  &4Sei stato bannato da questo server!
+
+  &bBannato il: $dateStart
+  &bBanned by: $executor
+  &fMotivo: &b$reason&f
+banned_message: |-
+  $base
+  &bVerrai unbannato in: $duration
+  &cSe vuoi richiedere spiegazione del ban recati sul nostro DS e dai il tuo BAN ID &8(&f#&b$id&8)
+
+         &e&nhttps://discord.gg/LeapNetwork
+banned_message_permanent: |-
+  $base
+  &cSe vuoi richiedere spiegazione del ban recati sul nostro DS e dai il tuo BAN ID &8(&f#&b$id&8)
+
+         &e&nhttps://discord.gg/LeapNetwork
+banned_message_appeal_message: ''
+banned_message_geoip_blacklist: |-
+  $base
+  &cSe vuoi richiedere spiegazione dell' ip-ban recati sul nostro DS e dai il tuo BAN ID &8(&f#&b$id&8)
+
+         &e&nhttps://discord.gg/LeapNetwork
+bungee_switch_banned: ''
+default_ban_reason: Non hai rispettato le regole!
+default_mute_reason: Spamming
+permission_error: Non hai i permessi per eseguire questo comando!
+muted: '&cSei mutato! &7($duration)'
+muted_permanent: '&cSei mutato! &7(Permanente)'
+notify:
+  banned_player_join: "&f$player&b ha provato ad entrare ma \xc3\xa8 bannato!"
+  banned_geoip_blacklist: "&f$player&b ha provato ad entrare ma \xc3\xa8 ip-bannato\
+    \ &7($geoip)&b!"
+error_no_reason_provided: '&cDevi specificare un motivo!'
+error_no_sql_connection: "&4Litebans non \xc3\xa8 connesso al database!"
+error_no_uuid_found: '&bIl player specificato non esiste!'
+error_console_only: "&4Il comando pu\xc3\xb2 essere usato solo dalla console"
+internal_error: '&cAn internal error occurred while attempting to perform this command.'
+duration_limit_error: '&bDurata massima consenstita: $duration'
+warned_join: '&bHai dei nuovi avvisi:'
+warned_join_entry: |-
+  &4 - Avvisato da: &c$executor&4: &c$reason
+     &4(&c$timeSince ago&4)
+command:
+  ban:
+    usage: '&bUsa: $command <giocatore> [Motivo] [Durata] [-s]'
+    unban_usage: '&bUsa: $command <giocatore>'
+    example: '\n&bEsempio: $command &cPinco-Pallino &eCheating &e3d  &7-s'
+    silent_prefix: '&7&o(Staff)'
+    broadcast_ban: "\\n&b&m--------------------------------------------\n&c$bannedPlayer\
+      \ &b\xc3\xa8 stato bannato da &c$executor \\n&b\xb0 &cMotivo: &b$reason \\n&b\xb0\
+      \ &cDurata: &bPermanente \\n&b&m-------------------------------------------- "
+    broadcast_tempban: "\\n&b&m--------------------------------------------\n&c$bannedPlayer\
+      \ &b\xc3\xa8 stato bannato da &c$executor \\n&b\xb0 &cMotivo: &b$reason \\n&b\xb0\
+      \ &cDurata: &b$duration \\n&b&m-------------------------------------------- "
+    broadcast_ip_ban: "\\n&b&m--------------------------------------------\n&c$bannedPlayer\
+      \ &b\xc3\xa8 stato ipbannato da &c$executor \\n&b\xb0 &cMotivo: &b$reason \\\
+      n&b\xb0 &cDurata: &bPermanente \\n&b&m-------------------------------------------- "
+    broadcast_temp_ip_ban: "\\n&b&m--------------------------------------------\n\
+      &c$bannedPlayer &b\xc3\xa8 stato ipbannato da &c$executor \\n&b\xb0 &cMotivo:\
+      \ &b$reason \\n&b\xb0 &cDurata: &b$duration \\n&b&m-------------------------------------------- "
+    broadcast_unban: "\\n&b&m--------------------------------------------\n&c$bannedPlayer\
+      \ &b\xc3\xa8 stato unbannato da &c$executor \\n&b&m-------------------------------------------- "
+    previous_ban_removed: '&aPrevious ban for $bannedPlayer removed.'
+    previous_ban_existing: '&c$bannedPlayer is already banned, and you do not have
+      permissions to replace existing bans.'
+    unban_queue: ''
+    error_no_spec: '&bNessun tempo specifico trovato'
+    unban_fail: "&bIl player non \xc3\xa8 bannato!"
+    no_override: "&bil player \xc3\xa8 gi\xc3 bannato!"
+    exempt: '&cNon puoi bannare$player!'
+    cooldown: '&bDevi aspettare altri $seconds secondi prima di riutilizzare questo
+      comando'
+    response: ''
+  mute:
+    usage: '&bUsa: $command <giocatore> [Motivo] [Durata] [-s]'
+    unmute_usage: '&bUsa: $command <giocatore>'
+    example: '\n&bEsempio: $command &cPinco-Pallino &eSpamming &e3d  &7-s'
+    broadcast: "\\n&b&m--------------------------------------------\n&c$mutedPlayer\
+      \ &b\xc3\xa8 stato mutato da &c$executor \\n&b\xb0 &cMotivo: &b$reason \\n&b\xb0\
+      \ &cDurata: &bPermanente \\n&b&m-------------------------------------------- "
+    broadcast_tempmute: "\\n&b&m--------------------------------------------\n&c$mutedPlayer\
+      \ &b\xc3\xa8 stato mutato da &c$executor \\n&b\xb0 &cMotivo: &b$reason \\n&b\xb0\
+      \ &cDurata: &b$duration \\n&b&m-------------------------------------------- "
+    broadcast_ip_mute: "\\n&b&m--------------------------------------------\n&c$mutedPlayer\
+      \ &b\xc3\xa8 stato ipmutato da &c$executor \\n&b\xb0 &cMotivo: &b$reason \\\
+      n&b\xb0 &cDurata: &bPermanente \\n&b&m-------------------------------------------- "
+    broadcast_temp_ip_mute: "\\n&b&m--------------------------------------------\n\
+      &c$mutedPlayer &b\xc3\xa8 stato ipmutato da &c$executor \\n&b\xb0 &cMotivo:\
+      \ &b$reason \\n&b\xb0 &cDurata: &b$duration \\n&b&m-------------------------------------------- "
+    message: '&cSei stato mutato! Per: $reason &7($duration)'
+    message_permanent: '&cSei stato mutato! Per: $reason &7(Permanente)'
+    broadcast_unmute: "\\n&b&m--------------------------------------------\n&c$mutedPlayer\
+      \ &b\xc3\xa8 stato smutato da &c$executor \\n&b&m-------------------------------------------- "
+    unmute_fail: '&bPlayer non mutato!'
+    no_override: "&bPlayer gi\xc3\xb9 mutato!"
+    previous_mute_removed: '&bVecchio mute aggiornato per $mutedPlayer'
+    previous_mute_existing: "&b$mutedPlayer \xc3\xa8 gi\xc3 "
+    exempt: '&bNon puoi mutare $player!'
+    notification: "&c$mutedPlayer ha provato a parlare ma \xc3\xa8 mutato!"
+    error_not_enabled: ''
+    response: ''
+    broadcast_unwarn: "\\n&b&m--------------------------------------------\n&c$bannedPlayer\
+      \ &b\xc3\xa8 stato unwarnato da &c$executor \\n&b&m-------------------------------------------- "
+  warn:
+    usage: '&bUsa: $command <giocatore> [Motivo] [-s]'
+    unwarn_usage: '&bUsa: $command <giocatore>'
+    example: ''
+    broadcast: "\\n&b&m----------------------------------------- \n&c$warnedPlayer\
+      \ &b\xc3\xa8 stato warnato da &c$executor \\n&b\xb0 &cMotivo:  &b$reason  \\\
+      n&b&m------------------------------------------ "
+    message: "&cSei stato warnato per: $reason! &7(Il warn verr\xc3 rimosso tra 7\
+      \ giorni)"
+    list_entry: '&bWarnato da &c$executor &bper: &c$reason&b!'
+    unwarn_response: '&bUltimo warn rimosso per &c$player'
+    unwarn_fail: '&bIl player non ha warn'
+    exempt: '&4Non puoi warnare $player!'
+    cooldown: '&bDevi aspettare altri $seconds secondi prima di riutilizzare questo
+      comando.'
+    response: ''
+  history:
+    usage: '&b$command <giocatore>'
+    start: '&bHistory del $target ha un limite: $limit'
+    ban_entry: "&f -- [&b$timeSince fa&f] --&b\n&e &c$name &e\xc3\xa8  stato &ebannato\
+      \ &eda: \n&8- &c$executor &e\\n\n&f \n Motivo: \n&8-&c$reason"
+    mute_entry: "&f -- [&b$timeSince fa&f] --&b\n&e &c$name &e\xc3\xa8  stato &emutato\
+      \ &eda: \n&8- &c$executor &e\\n\n&f \n Motivo: \n&8-&c$reason"
+    warn_entry: "&f -- [&b$timeSince fa&f] --&b\n&e &c$name &e\xc3\xa8  stato &ewarnato\
+      \ &eda: \n&8- &c$executor &e\\n\n&f \n Motivo: \n&8-&c$reason"
+    kick_entry: "&f -- [&b$timeSince fa&f] --&b\n&e &c$name &e\xc3\xa8  stato &ekickato\
+      \ &eda: \n&8- &c$executor &e\\n\n&f "
+    unban_entry: "&f -- [&b$timeSince fa&f] --&b\n&e &c$name &e\xc3\xa8  stato &eunbannato\
+      \ &eda: \n&8- &c$executor &e\\n\n&f \n Motivo: \n&8-&c$reason"
+    unmute_entry: "&f -- [&b$timeSince fa&f] --&b\n&e &c$name &e\xc3\xa8  stato &esmutato\
+      \ &eda: \n&8- &c$executor &e\\n\n&f \n Motivo: \n&8-&c$reason"
+    active_suffix: '&7 [&aAttivo&7]'
+    expired_suffix: '&7 [&cScaduto&7]'
+    active_suffix_temp: |-
+      &7 [&aAttivo&7]
+      &eScade in $duration.
+    error_no_history: '&bNessuna storia trovata...'
+    error_no_user: '&bUser non trovato...'
+  warnings:
+    usage: '&c$command <giocatore>'
+    start: '&b Warning attivi per: &c$target:'
+  prunehistory:
+    usage: '&b$command <giocatore> [durata]'
+    message: ''
+  staffhistory:
+    usage: '&b$command <player> [massimo=10]'
+    start: '&bLa Staff History per $target ha un limite ($limit) :'
+  staffrollback:
+    usage: '&c$command <player> [duration]'
+    message: '&aRollback completed, total entries removed: $amount'
+  banlist:
+    start: '&f=== &aPage &6$page&a out of &6$total&f ==='
+  iphistory:
+    usage: '&b$command <giocatore> [massimo=10]'
+    start: '&bLa Staff History per $target ha un limite ($limit) :'
+    entry: '&a - [&f$date&a]&f $name&a:&f $ip'
+    error_no_history: '&cNo history found.'
+  dupeip:
+    usage: '&b$command <player>'
+    start: '&bControllo &b$name&b &8&o($ip)&f. &f[&aOnline&f] [&7Offline&f] [&cBanned&f]'
+    start_no_ip: '&bControllo &b$name&b &8&o($ip)&f. &f[&aOnline&f] [&7Offline&f]
+      [&cBanned&f]'
+    separator: '&f, '
+    online: '&a'
+    offline: '&7'
+    banned: '&c'
+    muted: '&6'
+    multiple_addresses: '[$num addresses]'
+  ipreport:
+    start: '&fScanning &a$num&f online players.. [&aOnline&f] [&7Offline&f] [&cBanned&f]'
+    entry: '&f$player&a: $result'
+  checkban:
+    usage: '&b$command <giocatore>'
+    no_ban: '&cTarget is not banned!'
+    banned: |-
+      &aTarget &f[&a$target&f]&a is banned:
+      &bBannato da: &c$executor
+      &bMotivo: &c$reason&a
+      &bBannato il: &c$dateStart
+      &bIl Ban finisce in: &c$dateEnd ($duration)
+      &bBannato dal server &c&6&a$serverOrigin&a, server scope: &6$serverScope
+      &bIP ban:&c $ipban, silent: $silent, permanent: $permanent
+  checkmute:
+    usage: '&c$command <player>'
+    no_mute: '&cTarget is not muted!'
+    muted: |-
+      &bTarget &f[&a$target&f]&a is muted:
+      &bMutato da: $executor
+      &bMotivo: $reason&r
+      &bMutato il: $dateStart
+      &bMutato fino il: $dateEnd ($duration)
+      &bMutato sul server &6$serverOrigin&a, server scope: &6$serverScope
+      &bIP mute: $ipban, silent: $silent, permanent: $permanent
+  lastuuid:
+    usage: '&c$command <player|IP>'
+    message: '&fLast UUID for &a$name&f: &a$uuid'
+  geoip:
+    usage: '&c$command <player|IP>'
+    message: '&a$target&f is from: &a$result'
+    error_disabled: '&cGeoIP support is not enabled in the configuration!'
+    error_unavailable: '&cGeoIP support is currently unavailable, has it been downloaded
+      yet?'
+    error_not_found: '&cGeoIP information for $target not found.'
+  lockdown:
+    usage: '&c$command <reason> | $command end'
+    message: '&cServer lockdown activated (reason: "$reason&c")'
+    stopped: '&aLockdown has been deactivated.'
+    kick_message: |-
+      Server lockdown active, try again later.
+      Reason: $reason
+    kick_message_global: |-
+      Network lockdown active, try again later.
+      Reason: $reason
+    error_not_active: '&cLockdown is not active!'
+  kick:
+    usage: '&c$command <player> [reason]'
+    no_match: '&cError: &4Player not found.'
+    kick_requested: '&6Player $player is not online on this server. Cross-server kick
+      has been requested.'
+    message: '&bSei stato kickato dal server. \n&cMotivo: $reason'
+    message_no_reason: '&bSei stato kickato dal server. \n&cMotivo: AntiCheat Detection'
+    response: '&6$player has been kicked.'
+    broadcast: "\\n&b&m----------------------------------------- \n&c$player &b\xc3\
+      \xa8 stato kicked da &c$executor \\n&b\xb0 &cMotivo:  &b$reason  \\n&b&m------------------------------------------ "
+    broadcast_no_reason: "\\n&b&m----------------------------------------- \n&c$player\
+      \ &b\xc3\xa8 stato kickato da &c$executor \\n&b\xb0 &cMotivo:  &bAntiCheat Detection\
+      \  \\n&b&m------------------------------------------ "
+    exempt: '&cYou can''t kick $player!'
+  togglechat:
+    toggle_off: '&aChat has been toggled off.'
+    toggle_on: '&aChat has been toggled on.'
+  clearchat:
+    broadcast: "&bLa chat \xc3\xa8 stata cancellata da $executor."
+  mutechat:
+    response: "&b La chat del server \xc3\xa8 disabilitata"
+    broadcast_disabled: "La chat del server \xc3\xa8 stata disabilitata da $executor."
+    broadcast_enabled: "La chat del server \xc3\xa8 stata riabilitata da $executor."
+  litebans:
+    reload_success: '&aLiteBans reloaded successfully.'
+    reload_fail_connect: '&aLitebans reloaded. &cFailed to connect to database.'
+    reload_fail: '&cReload failed.'
+    reload_fail_config: |-
+      &c[LiteBans] &4config.yml is not valid and could not be loaded, the default configuration will be used.
+      &cPlease check the server console for more information.
+    reload_fail_messages: |-
+      &c[LiteBans] &4messages.yml is not valid and could not be loaded, default messages will be used.
+      &cPlease check the server console for more information.
+    add_history_usage: '&c$command addhistory <name> <UUID> <IP>'
+    add_history: '&aHistory added.'
+    fix_history: '&aFixing history for table $table...'
+    fix_history_result: '&aAdded $amount entries.'
+    fix_history_offline_uuids: '&c$amount UUIDs were not fetched from Mojang since
+      they are offline-mode UUIDs.'
+    import_usage: '&c$command import start'
+    import_start: '&aImporting from $db, this might take a while...'
+    import_finish: '&aImport finished successfully. $bans bans imported, $ipbans IP-bans.'
+    import_finish_litebans: '&aImport finished successfully. Added $amount entries
+      to the database.'
+    import_fail: '&cImport failed. Check console.'
+    import_unsupported: '&cImporting from ''$name'' is not supported yet!'
+duration:
+  expired: expired
+  forever: permanente
+  year: anno
+  years: anni
+  month: mese
+  months: mesi
+  week: settimana
+  weeks: settimane
+  day: giorno
+  days: giorni
+  hour: ora
+  hours: ore
+  minute: minuto
+  minutes: minuti
+  second: secondo
+  seconds: secondi
+  format: '%d %s'
+  separator: ', '
+strings:
+  global: global
+  'null': undefined
+  'true': 'yes'
+  'false': 'no'
